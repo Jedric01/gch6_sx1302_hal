@@ -306,14 +306,14 @@ void thread_valid(void);
 void thread_spectral_scan(void);
 
 // MQTT Definitions
-#define ADDRESS     "mqtts://zcf2e5b5.ala.us-east-1.emqxsl.com:8883"
+#define ADDRESS     "broker.emqx.io:1883"
 #define USERNAME    "user"
 #define PASSWORD    "user"
 #define CLIENTID    "c-client"
 #define QOS         0
 #define TOPIC       "emqx/c-test"
 #define TIMEOUT     10000L
-#define CAPATH      "/home/fyp-gch6-2/Documents/paho.mqtt.c/emqxsl-ca.crt"
+// #define CAPATH      "/home/fyp-gch6-2/Documents/paho.mqtt.c/emqxsl-ca.crt"
 
 void publish(MQTTClient client, char *topic, char *payload) {
     MQTTClient_message message = MQTTClient_message_initializer;
@@ -1527,9 +1527,9 @@ int main(int argc, char ** argv)
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
     conn_opts.username = USERNAME;
     conn_opts.password = PASSWORD;
-    MQTTClient_SSLOptions ssl_opts = MQTTClient_SSLOptions_initializer;
-    ssl_opts.trustStore = CAPATH;
-    conn_opts.ssl = &ssl_opts;
+    // MQTTClient_SSLOptions ssl_opts = MQTTClient_SSLOptions_initializer;
+    // ssl_opts.trustStore = CAPATH;
+    // conn_opts.ssl = &ssl_opts;
     
     if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
         printf("Failed to connect, return code %d\n", rc);

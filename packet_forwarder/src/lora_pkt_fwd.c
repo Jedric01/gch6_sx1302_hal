@@ -55,10 +55,8 @@ License: Revised BSD License, see LICENSE.TXT file include in the project
 #include "loragw_reg.h"
 #include "loragw_gps.h"
 
-#include "stdlib.h"
-#include "string.h"
-#include "unistd.h"
 #include "MQTTClient.h"
+#include "mqtt-config.h"
 
 /* -------------------------------------------------------------------------- */
 /* --- PRIVATE MACROS ------------------------------------------------------- */
@@ -304,28 +302,6 @@ void thread_jit(void);
 void thread_gps(void);
 void thread_valid(void);
 void thread_spectral_scan(void);
-
-// MQTT Definitions
-#define ADDRESS     "broker.emqx.io:1883"
-#define USERNAME    "user"
-#define PASSWORD    "user"
-#define CLIENTID    "c-client"
-#define QOS         0
-#define TOPIC       "emqx/c-test"
-#define TIMEOUT     10000L
-// #define CAPATH      "/home/fyp-gch6-2/Documents/paho.mqtt.c/emqxsl-ca.crt"
-
-void publish_mqtt(MQTTClient client, char *topic, char *payload) {
-    MQTTClient_message message = MQTTClient_message_initializer;
-    message.payload = payload;
-    message.payloadlen = strlen(payload);
-    message.qos = QOS;
-    message.retained = 0;
-    MQTTClient_deliveryToken token;
-    MQTTClient_publishMessage(client, topic, &message, &token);
-    MQTTClient_waitForCompletion(client, token, TIMEOUT);
-    printf("Send `%s` to topic `%s` \n", payload, TOPIC);
-}
 
 /* -------------------------------------------------------------------------- */
 /* --- PRIVATE FUNCTIONS DEFINITION ----------------------------------------- */
@@ -1518,25 +1494,12 @@ int main(int argc, char ** argv)
     float rx_nocrc_ratio;
     float up_ack_ratio;
     float dw_ack_ratio;
-    
-    // initialize MQTT Client
-    int rc;
-    MQTTClient client;
 
-    MQTTClient_create(&client, ADDRESS, CLIENTID, 0, NULL);
-    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
-    conn_opts.username = USERNAME;
-    conn_opts.password = PASSWORD;
-
-    // MQTTClient_SSLOptions ssl_opts = MQTTClient_SSLOptions_initializer;
-    // ssl_opts.trustStore = CAPATH;
-    // conn_opts.ssl = &ssl_opts;
-    
-    if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
-        printf("Failed to connect, return code %d\n", rc);
-        exit(-1);
-    } else {
-        printf("Connected to MQTT Broker!\n");
+    /* init MQTT */
+    bool mqtt_connected = false;
+    MQTTClient mqtt_client;
+    if (initialize_mqtt_client(&mqtt_client) == MQTTCLIENT_SUCCESS){
+        mqtt_connected = true;
     }
 
     /* Parse command line options */
@@ -1938,7 +1901,9 @@ int main(int argc, char ** argv)
         report_ready = true;
         pthread_mutex_unlock(&mx_stat_rep);
         
-        publish_mqtt(client, TOPIC, status_report);
+        if (mqtt_connected){ 
+            publish_mqtt(mqtt_client, TOPIC, status_report);
+        }
     }
 
     /* wait for all threads with a COM with the concentrator board to finish (1 fetch cycle max) */
@@ -1994,10 +1959,9 @@ int main(int argc, char ** argv)
         }
     }
     
-    // diconnect mqtt client
-    MQTTClient_disconnect(client, TIMEOUT);
-    MQTTClient_destroy(&client);
-    return rc;
+    if (mqtt_connected){
+        disconnect_mqtt(&mqtt_client);
+    }
 
     MSG("INFO: Exiting packet forwarder program\n");
     exit(EXIT_SUCCESS);

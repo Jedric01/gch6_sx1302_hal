@@ -16,7 +16,7 @@ ARCH ?=
 CROSS_COMPILE ?=
 
 OBJDIR = obj
-INCLUDES = $(wildcard inc/*.h)
+INCLUDES = $(wildcard inc/*.h, src/*.h)
 
 ### External constant definitions
 # must get library build option to know if mpsse must be linked or not

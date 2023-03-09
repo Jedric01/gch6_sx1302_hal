@@ -7,10 +7,10 @@
 #define ADDRESS     "broker.emqx.io:1883"
 #define CLIENTID    "c-client"
 #define QOS         0
-#define TOPIC_STATUS       "gateway/0x%016" PRIx64 "/status"
+#define TOPIC_STATUS            "gateway/0x%016" PRIx64 "/status"
 #define TOPIC_CONTROL_COMMAND   "gateway/control/0x%016" PRIx64 "/%s"
-#define TOPIC_CONTROL_RESPONSE   "gateway/control/0x%016" PRIx64 "/response"
-#define TOPIC_DEVICE    "gateway/0x%016" PRIx64 "/message"
+#define TOPIC_CONTROL_RESPONSE  "gateway/control/0x%016" PRIx64 "/response"
+#define TOPIC_DEVICE            "gateway/0x%016" PRIx64 "/message"
 #define TIMEOUT     10000L
 
 
@@ -44,7 +44,7 @@ void publish_mqtt(MQTTClient client, char *topic, char *payload) {
     }
 
     rc = MQTTClient_waitForCompletion(client, token, TIMEOUT);
-    printf("Sent `%s` to topic `%s` \n", payload, topic);
+    printf("MQTT sent `%s` to topic `%s` \n", payload, topic);
 }
 
 // disconnects the client from the broker

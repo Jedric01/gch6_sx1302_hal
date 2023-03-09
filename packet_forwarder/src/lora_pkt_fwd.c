@@ -1679,7 +1679,12 @@ int main(int argc, char ** argv)
     } else {
         printf("INFO: concentrator EUI: 0x%016" PRIx64 "\n", eui);
     }
-
+    
+    // format eui into topic 
+    char mqttTopic[50];
+    snprintf(mqttTopic, 50, TOPIC_STATUS, eui); 
+    //printf(mqttTopic);
+    
     /* spawn threads to manage upstream and downstream */
     i = pthread_create(&thrid_up, NULL, (void * (*)(void *))thread_up, NULL);
     if (i != 0) {
@@ -1902,7 +1907,8 @@ int main(int argc, char ** argv)
         pthread_mutex_unlock(&mx_stat_rep);
         
         if (mqtt_connected){ 
-            publish_mqtt(mqtt_client, TOPIC, status_report);
+            printf(mqttTopic);
+            publish_mqtt(mqtt_client, mqttTopic, status_report);
         }
     }
 

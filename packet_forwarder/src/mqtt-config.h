@@ -7,9 +7,14 @@
 #define ADDRESS     "broker.emqx.io:1883"
 #define CLIENTID    "c-client"
 #define QOS         0
-#define TOPIC       "emqx/c-test"
+#define TOPIC_STATUS       "gateway/0x%016" PRIx64 "/status"
+#define TOPIC_CONTROL_COMMAND   "gateway/control/0x%016" PRIx64 "/%s"
+#define TOPIC_CONTROL_RESPONSE   "gateway/control/0x%016" PRIx64 "/response"
+#define TOPIC_DEVICE    "gateway/0x%016" PRIx64 "/message"
 #define TIMEOUT     10000L
 
+
+// initializes mqtt client abd returns response code, indicating success/failure
 int initialize_mqtt_client(MQTTClient* client){
     MQTTClient_create(client, ADDRESS, CLIENTID, 0, NULL);
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
@@ -24,6 +29,7 @@ int initialize_mqtt_client(MQTTClient* client){
     }
 }
 
+// pusblishes a message/payload to a topic, using an MQTTClient
 void publish_mqtt(MQTTClient client, char *topic, char *payload) {
     MQTTClient_message message = MQTTClient_message_initializer;
     message.payload = payload;
@@ -38,9 +44,10 @@ void publish_mqtt(MQTTClient client, char *topic, char *payload) {
     }
 
     rc = MQTTClient_waitForCompletion(client, token, TIMEOUT);
-    printf("Sent `%s` to topic `%s` \n", payload, TOPIC);
+    printf("Sent `%s` to topic `%s` \n", payload, topic);
 }
 
+// disconnects the client from the broker
 void disconnect_mqtt(MQTTClient* client){
     // diconnect mqtt client, only runs if ./lora_pkt_fwd.main exits gracefully
     int rc;

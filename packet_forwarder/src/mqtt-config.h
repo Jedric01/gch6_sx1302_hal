@@ -46,7 +46,7 @@ void publish_mqtt(MQTTClient client, char *topic, char *payload) {
     rc = MQTTClient_waitForCompletion(client, token, TIMEOUT);
     printf("### [MQTT] ### \n");
     printf("Topic: `%s`\n", topic);
-    printf("Message: %s\n", message);
+    printf("Message: `%s`\n", payload);
 }
 
 // disconnects the client from the broker

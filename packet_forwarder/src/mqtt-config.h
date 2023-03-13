@@ -7,7 +7,7 @@
 #define ADDRESS     "broker.emqx.io:1883"
 #define CLIENTID    "c-client"
 #define QOS         0
-#define TOPIC_STATUS            "gateway/eui/status"
+#define TOPIC_STATUS            "gateway/0x%016" PRIx64 "/status"
 #define TOPIC_CONTROL_COMMAND   "gateway/control/0x%016" PRIx64 "/%s"
 #define TOPIC_CONTROL_RESPONSE  "gateway/control/0x%016" PRIx64 "/response"
 #define TOPIC_DEVICE            "gateway/0x%016" PRIx64 "/message"

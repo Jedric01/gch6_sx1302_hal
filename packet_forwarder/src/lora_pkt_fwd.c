@@ -1680,9 +1680,10 @@ int main(int argc, char ** argv)
         printf("INFO: concentrator EUI: 0x%016" PRIx64 "\n", eui);
     }
     
-    // format eui into topic 
+    // format eui into topic
     char mqttTopic[50];
-    snprintf(mqttTopic, 50, TOPIC_STATUS, eui); 
+    snprintf(mqttTopic, 50, TOPIC_STATUS);
+    // snprintf(mqttTopic, 50, TOPIC_STATUS, eui);
     //printf(mqttTopic);
     
     /* spawn threads to manage upstream and downstream */
@@ -1898,19 +1899,25 @@ int main(int argc, char ** argv)
 
         /* generate a JSON report (will be sent to server by upstream thread) */
         pthread_mutex_lock(&mx_stat_rep);
-        int rc;
+        int rcs, rcm;
         if (((gps_enabled == true) && (coord_ok == true)) || (gps_fake_enable == true)) {
-            rc = snprintf(status_report, STATUS_SIZE, "{\"stat\":{\"eui\":\"0x%016" PRIx64 "\",\"time\":\"%s\",\"location\":{\"lati\":%.5f,\"long\":%.5f,\"alti\":%i},\"metrics\":{\"rxnb\":%u,\"rxok\":%u,\"rxfw\":%u,\"ackr\":%.1f,\"dwnb\":%u,\"txnb\":%u,\"temp\":%.1f}}}", eui, stat_timestamp, cp_gps_coord.lat, cp_gps_coord.lon, cp_gps_coord.alt, cp_nb_rx_rcv, cp_nb_rx_ok, cp_up_pkt_fwd, 100.0 * up_ack_ratio, cp_dw_dgram_rcv, cp_nb_tx_ok, temperature);
+            rcs = snprintf(status_report, STATUS_SIZE, "{\"stat\":{\"eui\":\"0x%016" PRIx64 "\",\"time\":\"%s\",\"location\":{\"lati\":%.5f,\"long\":%.5f,\"alti\":%i},\"metrics\":{\"rxnb\":%u,\"rxok\":%u,\"rxfw\":%u,\"ackr\":%.1f,\"dwnb\":%u,\"txnb\":%u,\"temp\":%.1f}}}", eui, stat_timestamp, cp_gps_coord.lat, cp_gps_coord.lon, cp_gps_coord.alt, cp_nb_rx_rcv, cp_nb_rx_ok, cp_up_pkt_fwd, 100.0 * up_ack_ratio, cp_dw_dgram_rcv, cp_nb_tx_ok, temperature);
+            rcm = snprintf(mqtt_report, MQTT_MSG_SIZE, "{\"stat\":{\"eui\":\"0x%016" PRIx64 "\",\"time\":\"%s\",\"location\":{\"lati\":%.5f,\"long\":%.5f,\"alti\":%i},\"metrics\":{\"rxnb\":%u,\"rxok\":%u,\"rxfw\":%u,\"ackr\":%.1f,\"dwnb\":%u,\"txnb\":%u,\"temp\":%.1f}}}", eui, stat_timestamp, cp_gps_coord.lat, cp_gps_coord.lon, cp_gps_coord.alt, cp_nb_rx_rcv, cp_nb_rx_ok, cp_up_pkt_fwd, 100.0 * up_ack_ratio, cp_dw_dgram_rcv, cp_nb_tx_ok, temperature);
         } else {
-            rc = snprintf(status_report, STATUS_SIZE, "{\"stat\":{\"eui\":\"0x%016" PRIx64 "\",\"time\":\"%s\",\"metrics\":{\"rxnb\":%u,\"rxok\":%u,\"rxfw\":%u,\"ackr\":%.1f,\"dwnb\":%u,\"txnb\":%u,\"temp\":%.1f}}}", eui, stat_timestamp, cp_nb_rx_rcv, cp_nb_rx_ok, cp_up_pkt_fwd, 100.0 * up_ack_ratio, cp_dw_dgram_rcv, cp_nb_tx_ok, temperature);
+            rcs = snprintf(status_report, STATUS_SIZE, "{\"stat\":{\"eui\":\"0x%016" PRIx64 "\",\"time\":\"%s\",\"metrics\":{\"rxnb\":%u,\"rxok\":%u,\"rxfw\":%u,\"ackr\":%.1f,\"dwnb\":%u,\"txnb\":%u,\"temp\":%.1f}}}", eui, stat_timestamp, cp_nb_rx_rcv, cp_nb_rx_ok, cp_up_pkt_fwd, 100.0 * up_ack_ratio, cp_dw_dgram_rcv, cp_nb_tx_ok, temperature);
+            rcm = snprintf(mqtt_report, MQTT_MSG_SIZE, "{\"stat\":{\"eui\":\"0x%016" PRIx64 "\",\"time\":\"%s\",\"metrics\":{\"rxnb\":%u,\"rxok\":%u,\"rxfw\":%u,\"ackr\":%.1f,\"dwnb\":%u,\"txnb\":%u,\"temp\":%.1f}}}", eui, stat_timestamp, cp_nb_rx_rcv, cp_nb_rx_ok, cp_up_pkt_fwd, 100.0 * up_ack_ratio, cp_dw_dgram_rcv, cp_nb_tx_ok, temperature);
         }
-        if (rc < 0) { printf("Error on snprintf overflow\n"); exit(-1); }
+        if (rcs < 0) { printf("Error on status report snprintf write to buffer.\n"); }
 
         report_ready = true;
         pthread_mutex_unlock(&mx_stat_rep);
         
         if (mqtt_connected){ 
-            publish_mqtt(mqtt_client, TOPIC_STATUS, status_report);
+            if (rcm < 0 || rcm >= MQTT_MSG_SIZE){
+                printf("[GCH6] Error on mqtt message snprintf write to buffer.\n");
+            } else {
+                publish_mqtt(mqtt_client, TOPIC_STATUS, mqtt_report);
+            }
         }
     }
 

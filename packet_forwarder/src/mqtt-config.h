@@ -13,7 +13,6 @@
 #define TOPIC_DEVICE            "gateway/0x%016" PRIx64 "/message"
 #define TIMEOUT     10000L
 
-
 // initializes mqtt client abd returns response code, indicating success/failure
 int initialize_mqtt_client(MQTTClient* client){
     MQTTClient_create(client, ADDRESS, CLIENTID, 0, NULL);
@@ -21,10 +20,10 @@ int initialize_mqtt_client(MQTTClient* client){
     
     int rc;
     if ((rc = MQTTClient_connect(*client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
-        printf("Failed to connect, return code %d\n", rc);
+        printf("[GCH6] Failed to connect, return code %d\n", rc);
         return -1;
     } else {
-        printf("Connected to MQTT Broker!\n");
+        printf("[GCH6] Connected to MQTT Broker!\n");
         return 0;
     }
 }
@@ -40,13 +39,13 @@ void publish_mqtt(MQTTClient client, char *topic, char *payload) {
 
     int rc;
     if ((rc = MQTTClient_publishMessage(client, topic, &message, &token)) != MQTTCLIENT_SUCCESS){
-        printf("Failed to publish message, return code %d\n", rc);
+        printf("[GCH6] Failed to publish message, return code %d\n", rc);
     }
 
     rc = MQTTClient_waitForCompletion(client, token, TIMEOUT);
     printf("### [MQTT] ### \n");
-    printf("Topic: `%s`\n", topic);
-    printf("Message: `%s`\n", payload);
+    printf("[GCH6] Topic: %s\n", topic);
+    printf("[GCH6] Message: %s\n", payload);
 }
 
 // disconnects the client from the broker
@@ -54,9 +53,9 @@ void disconnect_mqtt(MQTTClient* client){
     // diconnect mqtt client, only runs if ./lora_pkt_fwd.main exits gracefully
     int rc;
     if ((rc = MQTTClient_disconnect(*client, 10000)) != MQTTCLIENT_SUCCESS){
-    	printf("Failed to disconnect MQTT, return code %d\n", rc);
+    	printf("[GCH6] Failed to disconnect MQTT, return code %d\n", rc);
     } else{
-        printf("MQTT disconnected gracefully.\n");
+        printf("[GCH6] MQTT disconnected gracefully.\n");
     }
     MQTTClient_destroy(client);
 }

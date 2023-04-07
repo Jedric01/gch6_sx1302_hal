@@ -1917,7 +1917,7 @@ int main(int argc, char ** argv)
             if (rcm < 0 || rcm >= STATUS_SIZE){
                 printf("[GCH6] Error on mqtt message snprintf write to buffer.\n");
             } else {
-                publish_mqtt(mqtt_client, "test/0x0016c001f160f149/status", mqtt_gateway_status);
+                publish_mqtt(mqtt_client, "gateway/eui/status", mqtt_gateway_status);
             }
         }
     }
@@ -2494,7 +2494,7 @@ void *thread_up(void* args) {
         printf("\nJSON up: %s\n", (char *)(buff_up + 12)); /* DEBUG: display JSON payload */
 
         // [GCH6]: sending tag data
-        publish_mqtt(*mqtt_client_p, "test/0x0016c001f160f149/message", (char *)(buff_up + 12));
+        publish_mqtt(*mqtt_client_p, "gateway/eui/status", (char *)(buff_up + 12));
 
         /* send datagram to server */
         send(sock_up, (void *)buff_up, buff_index, 0);

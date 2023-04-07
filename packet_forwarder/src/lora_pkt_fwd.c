@@ -227,6 +227,7 @@ static struct coord_s meas_gps_err; /* GPS position of the gateway */
 static pthread_mutex_t mx_stat_rep = PTHREAD_MUTEX_INITIALIZER; /* control access to the status report */
 static bool report_ready = false; /* true when there is a new report to send to the server */
 static char status_report[STATUS_SIZE]; /* status report as a JSON object */
+static char mqtt_gateway_status[STATUS_SIZE]; /* status report as a JSON object */
 
 /* beacon parameters */
 static uint32_t beacon_period = 0; /* set beaconing period, must be a sub-multiple of 86400, the nb of sec in a day */
@@ -296,7 +297,7 @@ static void gps_process_coords(void);
 static int get_tx_gain_lut_index(uint8_t rf_chain, int8_t rf_power, uint8_t * lut_index);
 
 /* threads */
-void thread_up(void);
+void *thread_up(void* args);
 void thread_down(void);
 void thread_jit(void);
 void thread_gps(void);
@@ -1495,7 +1496,7 @@ int main(int argc, char ** argv)
     float up_ack_ratio;
     float dw_ack_ratio;
 
-    /* init MQTT */
+    /* [GCH6] Init MQTT */
     bool mqtt_connected = false;
     MQTTClient mqtt_client;
     if (initialize_mqtt_client(&mqtt_client) == MQTTCLIENT_SUCCESS){
@@ -1682,12 +1683,12 @@ int main(int argc, char ** argv)
     
     // format eui into topic
     char mqttTopic[50];
-    snprintf(mqttTopic, 50, TOPIC_STATUS);
-    // snprintf(mqttTopic, 50, TOPIC_STATUS, eui);
-    //printf(mqttTopic);
+    snprintf(mqttTopic, 50, TOPIC_STATUS, eui); 
+    // not yet used: hardcode topic into publish_mqtt for now
+    // printf("[GCH6] Initialized MQTT Status Topic to: %s\n", mqttTopic);
     
     /* spawn threads to manage upstream and downstream */
-    i = pthread_create(&thrid_up, NULL, (void * (*)(void *))thread_up, NULL);
+    i = pthread_create(&thrid_up, NULL, (void * (*)(void *))thread_up, (void *)&mqtt_client);
     if (i != 0) {
         MSG("ERROR: [main] impossible to create upstream thread\n");
         exit(EXIT_FAILURE);
@@ -1901,22 +1902,23 @@ int main(int argc, char ** argv)
         pthread_mutex_lock(&mx_stat_rep);
         int rcs, rcm;
         if (((gps_enabled == true) && (coord_ok == true)) || (gps_fake_enable == true)) {
-            rcs = snprintf(status_report, STATUS_SIZE, "{\"stat\":{\"eui\":\"0x%016" PRIx64 "\",\"time\":\"%s\",\"location\":{\"lati\":%.5f,\"long\":%.5f,\"alti\":%i},\"metrics\":{\"rxnb\":%u,\"rxok\":%u,\"rxfw\":%u,\"ackr\":%.1f,\"dwnb\":%u,\"txnb\":%u,\"temp\":%.1f}}}", eui, stat_timestamp, cp_gps_coord.lat, cp_gps_coord.lon, cp_gps_coord.alt, cp_nb_rx_rcv, cp_nb_rx_ok, cp_up_pkt_fwd, 100.0 * up_ack_ratio, cp_dw_dgram_rcv, cp_nb_tx_ok, temperature);
-            rcm = snprintf(mqtt_report, MQTT_MSG_SIZE, "{\"stat\":{\"eui\":\"0x%016" PRIx64 "\",\"time\":\"%s\",\"location\":{\"lati\":%.5f,\"long\":%.5f,\"alti\":%i},\"metrics\":{\"rxnb\":%u,\"rxok\":%u,\"rxfw\":%u,\"ackr\":%.1f,\"dwnb\":%u,\"txnb\":%u,\"temp\":%.1f}}}", eui, stat_timestamp, cp_gps_coord.lat, cp_gps_coord.lon, cp_gps_coord.alt, cp_nb_rx_rcv, cp_nb_rx_ok, cp_up_pkt_fwd, 100.0 * up_ack_ratio, cp_dw_dgram_rcv, cp_nb_tx_ok, temperature);
+            rcs = snprintf(status_report, STATUS_SIZE, "\"stat\":{\"time\":\"%s\",\"lati\":%.5f,\"long\":%.5f,\"alti\":%i,\"rxnb\":%u,\"rxok\":%u,\"rxfw\":%u,\"ackr\":%.1f,\"dwnb\":%u,\"txnb\":%u,\"temp\":%.1f}", stat_timestamp, cp_gps_coord.lat, cp_gps_coord.lon, cp_gps_coord.alt, cp_nb_rx_rcv, cp_nb_rx_ok, cp_up_pkt_fwd, 100.0 * up_ack_ratio, cp_dw_dgram_rcv, cp_nb_tx_ok, temperature);
+            rcm = snprintf(mqtt_gateway_status, STATUS_SIZE, "{\"stat\":{\"eui\":\"0x%016" PRIx64 "\",\"time\":\"%s\",\"location\":{\"lati\":%.5f,\"long\":%.5f,\"alti\":%i},\"metrics\":{\"rxnb\":%u,\"rxok\":%u,\"rxfw\":%u,\"ackr\":%.1f,\"dwnb\":%u,\"txnb\":%u,\"temp\":%.1f}}}", eui, stat_timestamp, cp_gps_coord.lat, cp_gps_coord.lon, cp_gps_coord.alt, cp_nb_rx_rcv, cp_nb_rx_ok, cp_up_pkt_fwd, 100.0 * up_ack_ratio, cp_dw_dgram_rcv, cp_nb_tx_ok, temperature);
         } else {
-            rcs = snprintf(status_report, STATUS_SIZE, "{\"stat\":{\"eui\":\"0x%016" PRIx64 "\",\"time\":\"%s\",\"metrics\":{\"rxnb\":%u,\"rxok\":%u,\"rxfw\":%u,\"ackr\":%.1f,\"dwnb\":%u,\"txnb\":%u,\"temp\":%.1f}}}", eui, stat_timestamp, cp_nb_rx_rcv, cp_nb_rx_ok, cp_up_pkt_fwd, 100.0 * up_ack_ratio, cp_dw_dgram_rcv, cp_nb_tx_ok, temperature);
-            rcm = snprintf(mqtt_report, MQTT_MSG_SIZE, "{\"stat\":{\"eui\":\"0x%016" PRIx64 "\",\"time\":\"%s\",\"metrics\":{\"rxnb\":%u,\"rxok\":%u,\"rxfw\":%u,\"ackr\":%.1f,\"dwnb\":%u,\"txnb\":%u,\"temp\":%.1f}}}", eui, stat_timestamp, cp_nb_rx_rcv, cp_nb_rx_ok, cp_up_pkt_fwd, 100.0 * up_ack_ratio, cp_dw_dgram_rcv, cp_nb_tx_ok, temperature);
+            rcs = snprintf(status_report, STATUS_SIZE, "\"stat\":{\"time\":\"%s\",\"rxnb\":%u,\"rxok\":%u,\"rxfw\":%u,\"ackr\":%.1f,\"dwnb\":%u,\"txnb\":%u,\"temp\":%.1f}", stat_timestamp, cp_nb_rx_rcv, cp_nb_rx_ok, cp_up_pkt_fwd, 100.0 * up_ack_ratio, cp_dw_dgram_rcv, cp_nb_tx_ok, temperature);
+            rcm = snprintf(mqtt_gateway_status, STATUS_SIZE, "{\"stat\":{\"eui\":\"0x%016" PRIx64 "\",\"time\":\"%s\",\"metrics\":{\"rxnb\":%u,\"rxok\":%u,\"rxfw\":%u,\"ackr\":%.1f,\"dwnb\":%u,\"txnb\":%u,\"temp\":%.1f}}}", eui, stat_timestamp, cp_nb_rx_rcv, cp_nb_rx_ok, cp_up_pkt_fwd, 100.0 * up_ack_ratio, cp_dw_dgram_rcv, cp_nb_tx_ok, temperature);
         }
-        if (rcs < 0) { printf("Error on status report snprintf write to buffer.\n"); }
+        if (rcs < 0) { printf("[GCH6] Error on snprintf overflow\n"); }
+
 
         report_ready = true;
         pthread_mutex_unlock(&mx_stat_rep);
         
         if (mqtt_connected){ 
-            if (rcm < 0 || rcm >= MQTT_MSG_SIZE){
+            if (rcm < 0 || rcm >= STATUS_SIZE){
                 printf("[GCH6] Error on mqtt message snprintf write to buffer.\n");
             } else {
-                publish_mqtt(mqtt_client, TOPIC_STATUS, mqtt_report);
+                publish_mqtt(mqtt_client, "gateway/eui/status", mqtt_gateway_status);
             }
         }
     }
@@ -1985,7 +1987,7 @@ int main(int argc, char ** argv)
 /* -------------------------------------------------------------------------- */
 /* --- THREAD 1: RECEIVING PACKETS AND FORWARDING THEM ---------------------- */
 
-void thread_up(void) {
+void *thread_up(void* args) {
     int i, j, k; /* loop variables */
     unsigned pkt_in_dgram; /* nb on Lora packet in the current datagram */
     char stat_timestamp[24];
@@ -2004,6 +2006,10 @@ void thread_up(void) {
     uint8_t buff_up[TX_BUFF_SIZE]; /* buffer to compose the upstream packet */
     int buff_index;
     uint8_t buff_ack[32]; /* buffer to receive acknowledges */
+
+    /* [GCH6] MQTT */
+    // char mqtt_tag_data[TX_BUFF_SIZE];
+    MQTTClient* mqtt_client_p = (MQTTClient *) args;
 
     /* protocol variables */
     uint8_t token_h; /* random token for acknowledgement matching */
@@ -2050,6 +2056,7 @@ void thread_up(void) {
             exit(EXIT_FAILURE);
         }
 
+        // [GCH6] this thread also sends status report if available, can try disable if we want: send_report = false;
         /* check if there are status report to send */
         send_report = report_ready; /* copy the variable so it doesn't change mid-function */
         /* no mutex, we're only reading */
@@ -2465,6 +2472,7 @@ void thread_up(void) {
             }
         }
 
+        // [GCH6] this thread already prefix buffer (status_report) with '{'
         /* add status report if a new one is available */
         if (send_report == true) {
             pthread_mutex_lock(&mx_stat_rep);
@@ -2485,6 +2493,9 @@ void thread_up(void) {
         buff_up[buff_index] = 0; /* add string terminator, for safety */
 
         printf("\nJSON up: %s\n", (char *)(buff_up + 12)); /* DEBUG: display JSON payload */
+
+        // [GCH6]: sending tag data
+        publish_mqtt(*mqtt_client_p, "gateway/eui/status", (char *)(buff_up + 12));
 
         /* send datagram to server */
         send(sock_up, (void *)buff_up, buff_index, 0);
@@ -2518,6 +2529,8 @@ void thread_up(void) {
         pthread_mutex_unlock(&mx_meas_up);
     }
     MSG("\nINFO: End of upstream thread\n");
+
+    return NULL;
 }
 
 /* -------------------------------------------------------------------------- */

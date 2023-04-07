@@ -7,15 +7,12 @@
 #define ADDRESS     "broker.emqx.io:1883"
 #define CLIENTID    "c-client"
 #define QOS         0
-#define TOPIC_STATUS            "emqx/c-test"
-// #define TOPIC_STATUS            "gateway/eui/status/"
+#define TOPIC_STATUS            "gateway/0x%016" PRIx64 "/status"
 #define TOPIC_CONTROL_COMMAND   "gateway/control/0x%016" PRIx64 "/%s"
 #define TOPIC_CONTROL_RESPONSE  "gateway/control/0x%016" PRIx64 "/response"
 #define TOPIC_DEVICE            "gateway/0x%016" PRIx64 "/message"
 #define TIMEOUT     10000L
 #define MQTT_MSG_SIZE 200
-
-static char mqtt_report[MQTT_MSG_SIZE]; /* status report as a JSON object */
 
 // initializes mqtt client abd returns response code, indicating success/failure
 int initialize_mqtt_client(MQTTClient* client){
@@ -43,7 +40,7 @@ void publish_mqtt(MQTTClient client, char *topic, char *payload) {
 
     int rc;
     if ((rc = MQTTClient_publishMessage(client, topic, &message, &token)) != MQTTCLIENT_SUCCESS){
-        printf("Failed to publish message, return code %d\n", rc);
+        printf("[GCH6] Failed to publish message, return code %d\n", rc);
     }
 
     rc = MQTTClient_waitForCompletion(client, token, TIMEOUT);

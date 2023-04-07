@@ -1681,7 +1681,7 @@ int main(int argc, char ** argv)
         printf("INFO: concentrator EUI: 0x%016" PRIx64 "\n", eui);
     }
     
-    // format eui into topic 
+    // format eui into topic
     char mqttTopic[50];
     snprintf(mqttTopic, 50, TOPIC_STATUS, eui); 
     // not yet used: hardcode topic into publish_mqtt for now
@@ -1909,6 +1909,7 @@ int main(int argc, char ** argv)
             rcm = snprintf(mqtt_gateway_status, STATUS_SIZE, "{\"stat\":{\"eui\":\"0x%016" PRIx64 "\",\"time\":\"%s\",\"metrics\":{\"rxnb\":%u,\"rxok\":%u,\"rxfw\":%u,\"ackr\":%.1f,\"dwnb\":%u,\"txnb\":%u,\"temp\":%.1f}}}", eui, stat_timestamp, cp_nb_rx_rcv, cp_nb_rx_ok, cp_up_pkt_fwd, 100.0 * up_ack_ratio, cp_dw_dgram_rcv, cp_nb_tx_ok, temperature);
         }
         if (rcs < 0) { printf("[GCH6] Error on snprintf overflow\n"); }
+
 
         report_ready = true;
         pthread_mutex_unlock(&mx_stat_rep);

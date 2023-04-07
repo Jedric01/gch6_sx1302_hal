@@ -12,6 +12,7 @@
 #define TOPIC_CONTROL_RESPONSE  "gateway/control/0x%016" PRIx64 "/response"
 #define TOPIC_DEVICE            "gateway/0x%016" PRIx64 "/message"
 #define TIMEOUT     10000L
+#define MQTT_MSG_SIZE 200
 
 // initializes mqtt client abd returns response code, indicating success/failure
 int initialize_mqtt_client(MQTTClient* client){

@@ -19,8 +19,12 @@ topic = "mygch6/control"
 client_id = f'python-mqtt-{random.randint(0, 100)}'
 username = 'cust1'
 password = 'gch6'
-logging.basicConfig(level=logging.INFO)
 QOS = 0
+
+logging.basicConfig(
+    level=logging.INFO,
+    filename="./log/gch6-mqtt-controller.log"
+)
 
 pid = None
 logf = None

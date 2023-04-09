@@ -1,0 +1,11 @@
+INFO:root:Sending SUBSCRIBE (d0, m1) [(b'mygch6/control', 0)]
+INFO:root:Received CONNACK (0, 0)
+INFO:root:Connected to MQTT Broker!
+INFO:root:Received SUBACK
+INFO:root:Received PUBLISH (d0, q0, r0, m0), 'mygch6/control', ...  (4 bytes)
+INFO:root:RECEIVED `ping` from `mygch6/control` topic
+INFO:root:Sending PUBLISH (d0, q0, r0, m2), 'b'mygch6/control'', ... (4 bytes)
+INFO:root:PUBLISHED return =(0, 2)
+INFO:root:In on_publish callback mid= 2
+INFO:root:Received PUBLISH (d0, q0, r0, m0), 'mygch6/control', ...  (4 bytes)
+INFO:root:RECEIVED `pong` from `mygch6/control` topic

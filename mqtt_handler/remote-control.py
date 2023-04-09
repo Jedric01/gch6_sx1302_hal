@@ -26,8 +26,11 @@ pid = None
 logf = None
 
 ### MQTT HANDLER ###
+
+
 def on_log(client, userdata, level, buffer):
     logging.info(buffer)
+
 
 def connect_mqtt() -> mqtt_client:
     def on_connect(client, userdata, flags, rc):
@@ -47,17 +50,21 @@ def connect_mqtt() -> mqtt_client:
 
     return client
 
+
 def subscribe(client: mqtt_client):
     client.subscribe(topic)
     client.on_message = on_message
+
 
 def run():
     client = connect_mqtt()
     subscribe(client)
     client.loop_forever()
 
+
 def on_publish(client, userdata, mid):
     logging.info("In on_publish callback mid= " + str(mid))
+
 
 def on_message(client, userdata, msg):
     payload = msg.payload.decode()
@@ -65,6 +72,7 @@ def on_message(client, userdata, msg):
 
     response = parse_payload(payload)
     send_response(client, response)
+
 
 def parse_payload(payload):
     global pid, logf
@@ -119,13 +127,16 @@ def send_response(client, response):
 ### COMMAND FUNCTIONS ###
 
 def check_temp():
-    temp = subprocess.check_output(["vcgencmd","measure_temp"]).decode("UTF-8")
-    return(findall("\d+\.\d+",temp)[0])
-    
+    temp = subprocess.check_output(
+        ["vcgencmd", "measure_temp"]).decode("UTF-8")
+    return (findall("\d+\.\d+", temp)[0])
+
+
 def check_uptime():
     with open('/proc/uptime', 'r') as f:
         uptime_seconds = float(f.readline().split()[0])
     return uptime_seconds
+
 
 def reboot_handler():
     os.system('sudo shutdown -r now')
@@ -141,13 +152,14 @@ def run_pkt_fwd(config='conf-cs.json', log='log.txt'):
     try:
         logf = open(path_pf + log, 'w')
         pid = subprocess.Popen(args, stdout=logf, stderr=logf, cwd=path_pf)
-        
+
         return [pid, logf]
 
     except OSError as e:
         # encountered some error
         logging.info("I/O error({0}): {1}".format(e.errno, e.strerror))
         return [-1, None]
+
 
 def stop_pkt_fwd(logf):
     global pid
@@ -159,10 +171,11 @@ def stop_pkt_fwd(logf):
         time.sleep(2)   # grace time to save graceful exit log
         if logf:
             logf.close()
-        
+
     return rc
 
 #########################
+
 
 if __name__ == '__main__':
     run()

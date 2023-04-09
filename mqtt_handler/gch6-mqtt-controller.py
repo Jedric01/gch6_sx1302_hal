@@ -23,7 +23,8 @@ QOS = 0
 
 logging.basicConfig(
     level=logging.INFO,
-    filename="./log/gch6-mqtt-controller.log"
+    filename="./log/gch6-mqtt-controller.log",
+    filemode='w'
 )
 
 pid = None

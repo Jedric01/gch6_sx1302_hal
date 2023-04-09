@@ -19,3 +19,12 @@ INFO:root:Received PUBLISH (d0, q0, r0, m0), 'mygch6/control', ...  (38 bytes)
 INFO:root:RECEIVED `Packet forwarder started successfully.` from `mygch6/control` topic
 INFO:root:Sending PINGREQ
 INFO:root:Received PINGRESP
+INFO:root:Received PUBLISH (d0, q0, r0, m0), 'mygch6/control', ...  (12 bytes)
+INFO:root:RECEIVED `stop_pkt_fwd` from `mygch6/control` topic
+INFO:root:Sending PUBLISH (d0, q0, r0, m4), 'b'mygch6/control'', ... (38 bytes)
+INFO:root:PUBLISHED return =(0, 4)
+INFO:root:In on_publish callback mid= 4
+INFO:root:Received PUBLISH (d0, q0, r0, m0), 'mygch6/control', ...  (38 bytes)
+INFO:root:RECEIVED `Packet forwarder stopped successfully.` from `mygch6/control` topic
+INFO:root:Sending PINGREQ
+INFO:root:Received PINGRESP

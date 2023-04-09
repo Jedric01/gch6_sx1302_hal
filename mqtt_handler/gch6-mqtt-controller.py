@@ -3,12 +3,10 @@
 import random
 from paho.mqtt import client as mqtt_client
 import os
-
 import subprocess
-from subprocess import check_output
 import time
 from re import findall
-
+from pathlib import Path
 import logging
 
 broker = 'broker.emqx.io'
@@ -21,9 +19,12 @@ username = 'cust1'
 password = 'gch6'
 QOS = 0
 
+path_repo = Path(__file__).resolve().parent.parent
+path_log = str(path_repo) + "/log/"
+
 logging.basicConfig(
     level=logging.INFO,
-    filename="./log/gch6-mqtt-controller.log",
+    filename=path_log + "gch6-mqtt-controller.log",
     filemode='w'
 )
 
@@ -81,7 +82,7 @@ def on_message(client, userdata, msg):
 
 def parse_payload(payload):
     global pid, logf
-    command = payload.rstrip()
+    command = payload.rstrip().lstrip()
     response = ""
 
     # Get Status Handlers
@@ -149,14 +150,15 @@ def reboot_handler():
 
 ### PACKET FORWARDER CONTROLS ###
 
-def run_pkt_fwd(config='conf-cs.json', log='log.txt'):
+def run_pkt_fwd(config='conf-cs.json', log='pkt_fwd.log'):
     args = ['./lora_pkt_fwd', '-c', config]
-    usern = os.environ.get('USER')
-    path_pf = '/home/' + usern + '/Documents/sx1302_hal/packet_forwarder/'
 
     try:
-        logf = open(path_pf + log, 'w')
-        pid = subprocess.Popen(args, stdout=logf, stderr=logf, cwd=path_pf)
+        path_log = str(path_repo) + "/log/"
+        path_packet_forwarder = str(path_repo) + "/packet_forwarder/"
+        logf = open(path_log + log, 'w')
+        pid = subprocess.Popen(
+            args, stdout=logf, stderr=logf, cwd=path_packet_forwarder)
 
         return [pid, logf]
 

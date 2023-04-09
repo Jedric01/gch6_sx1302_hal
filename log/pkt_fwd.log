@@ -1,0 +1,233 @@
+CoreCell reset through GPIO23...
+SX1261 reset through GPIO23...
+CoreCell power enable through GPIO18...
+CoreCell ADC reset through GPIO13...
+*** Packet Forwarder ***
+Version: 2.1.0
+*** SX1302 HAL library version info ***
+Version: 2.1.0;
+***
+INFO: Little endian host
+INFO: found configuration file conf.json, parsing it
+INFO: conf.json does contain a JSON object named SX130x_conf, parsing SX1302 parameters
+INFO: com_type SPI, com_path /dev/spidev0.0, lorawan_public 1, clksrc 0, full_duplex 0
+INFO: antenna_gain 0 dBi
+INFO: Configuring legacy timestamp
+INFO: Configuring Tx Gain LUT for rf_chain 0 with 14 indexes for sx1250
+INFO: radio 0 enabled (type SX1250), center frequency 923500000, RSSI offset -215.399994, tx enabled 1, single input mode 0
+INFO: radio 1 enabled (type SX1250), center frequency 924300000, RSSI offset -215.399994, tx enabled 0, single input mode 0
+INFO: Lora multi-SF channel 0>  radio 0, IF -300000 Hz, 125 kHz bw, SF 5 to 12
+INFO: Lora multi-SF channel 1>  radio 0, IF -100000 Hz, 125 kHz bw, SF 5 to 12
+INFO: Lora multi-SF channel 2>  radio 0, IF 100000 Hz, 125 kHz bw, SF 5 to 12
+INFO: Lora multi-SF channel 3>  radio 0, IF 300000 Hz, 125 kHz bw, SF 5 to 12
+INFO: Lora multi-SF channel 4>  radio 1, IF -300000 Hz, 125 kHz bw, SF 5 to 12
+INFO: Lora multi-SF channel 5>  radio 1, IF -100000 Hz, 125 kHz bw, SF 5 to 12
+INFO: Lora multi-SF channel 6>  radio 1, IF 100000 Hz, 125 kHz bw, SF 5 to 12
+INFO: Lora multi-SF channel 7>  radio 1, IF 300000 Hz, 125 kHz bw, SF 5 to 12
+INFO: Lora std channel> radio 0, IF -300000 Hz, 250000 Hz bw, SF 7, Explicit header
+INFO: FSK channel> radio 0, IF -300000 Hz, 125000 Hz bw, 50000 bps datarate
+INFO: conf.json does contain a JSON object named gateway_conf, parsing gateway parameters
+INFO: gateway MAC address is configured to 0016C001F160F149
+INFO: server hostname or IP address is configured to "nam1.cloud.thethings.network"
+INFO: upstream port is configured to "1700"
+INFO: downstream port is configured to "1700"
+INFO: downstream keep-alive interval is configured to 10 seconds
+INFO: statistics display interval is configured to 30 seconds
+INFO: upstream PUSH_DATA time-out is configured to 100 ms
+INFO: packets received with a valid CRC will be forwarded
+INFO: packets received with a CRC error will NOT be forwarded
+INFO: packets received with no CRC will NOT be forwarded
+INFO: GPS serial port path is configured to "/dev/ttyACM0"
+INFO: Reference latitude is configured to 0.000000 deg
+INFO: Reference longitude is configured to 0.000000 deg
+INFO: Reference altitude is configured to 0 meters
+INFO: Beaconing period is configured to 0 seconds
+INFO: Beaconing signal will be emitted at 923400000 Hz
+INFO: Beaconing datarate is set to SF9
+INFO: Beaconing modulation bandwidth is set to 125000Hz
+INFO: Beaconing TX power is set to 14dBm
+INFO: Beaconing information descriptor is set to 0
+INFO: conf.json does contain a JSON object named debug_conf, parsing debug parameters
+INFO: got 2 debug reference payload
+INFO: reference payload ID 0 is 0xCAFE1234
+INFO: reference payload ID 1 is 0xCAFE2345
+INFO: setting debug log file name to loragw_hal.log
+INFO: [main] TTY port /dev/ttyACM0 open for GPS synchronization
+Opening SPI communication interface
+Note: chip version is 0x12 (v1.2)
+INFO: using legacy timestamp
+INFO: LoRa Service modem: configuring preamble size to 8 symbols
+ARB: dual demodulation disabled for all SF
+INFO: found temperature sensor on port 0x39
+INFO: [main] concentrator started, packet can now be received
+INFO: concentrator EUI: 0x0016c001f160f149
+INFO: [down] PULL_ACK received in 161 ms
+
+INFO: Received pkt from mote: 260C5F35 (fcnt=13)
+
+JSON up: {"rxpk":[{"jver":1,"tmst":1451690,"chan":0,"rfch":0,"freq":923.200000,"mid": 8,"stat":1,"modu":"LORA","datr":"SF9BW125","codr":"4/5","rssis":-83,"lsnr":12.2,"foff":5510,"rssi":-82,"size":21,"data":"gDVfDCYADQAIlYdE5dbI/w9UEjwT"}]}
+INFO: [down] PULL_RESP received  - token[0:1] :)
+
+JSON down: {"txpk":{"imme":false,"tmst":6451690,"freq":923.2,"rfch":0,"powe":13,"modu":"LORA","datr":"SF9BW125","codr":"4/5","ipol":true,"size":12,"ncrc":true,"data":"YDVfDCagAwC913EU"}}
+INFO: [down] PULL_ACK received in 160 ms
+INFO: [down] PULL_ACK received in 162 ms
+
+##### 2023-04-09 23:15:26 GMT #####
+### [UPSTREAM] ###
+# RF packets received by concentrator: 1
+# CRC_OK: 100.00%, CRC_FAIL: 0.00%, NO_CRC: 0.00%
+# RF packets forwarded: 1 (21 bytes)
+# PUSH_DATA datagrams sent: 1 (242 bytes)
+# PUSH_DATA acknowledged: 0.00%
+### [DOWNSTREAM] ###
+# PULL_DATA sent: 3 (100.00% acknowledged)
+# PULL_RESP(onse) datagrams received: 1 (179 bytes)
+# RF packets sent to concentrator: 1 (12 bytes)
+# TX errors: 0
+# TX rejected (collision packet): 0.00% (req:1, rej:0)
+# TX rejected (collision beacon): 0.00% (req:1, rej:0)
+# TX rejected (too late): 0.00% (req:1, rej:0)
+# TX rejected (too early): 0.00% (req:1, rej:0)
+### SX1302 Status ###
+# SX1302 counter (INST): 30819110
+# SX1302 counter (PPS):  0
+# BEACON queued: 0
+# BEACON sent so far: 0
+# BEACON rejected: 0
+### [JIT] ###
+src/jitqueue.c:440:jit_print_queue(): INFO: [jit] queue is empty
+#--------
+src/jitqueue.c:440:jit_print_queue(): INFO: [jit] queue is empty
+### [GPS] ###
+# Invalid time reference (age: 1681082126 sec)
+# no valid GPS coordinates available yet
+### Concentrator temperature: 39 C ###
+##### END #####
+
+JSON up: {"stat":{"time":"2023-04-09 23:15:26 GMT","rxnb":1,"rxok":1,"rxfw":1,"ackr":0.0,"dwnb":1,"txnb":1,"temp":39.2}}
+INFO: [down] PULL_ACK received in 170 ms
+INFO: [down] PULL_ACK received in 160 ms
+INFO: [down] PULL_ACK received in 161 ms
+
+##### 2023-04-09 23:15:56 GMT #####
+### [UPSTREAM] ###
+# RF packets received by concentrator: 0
+# CRC_OK: 0.00%, CRC_FAIL: 0.00%, NO_CRC: 0.00%
+# RF packets forwarded: 0 (0 bytes)
+# PUSH_DATA datagrams sent: 1 (123 bytes)
+# PUSH_DATA acknowledged: 0.00%
+### [DOWNSTREAM] ###
+# PULL_DATA sent: 3 (100.00% acknowledged)
+# PULL_RESP(onse) datagrams received: 0 (0 bytes)
+# RF packets sent to concentrator: 0 (0 bytes)
+# TX errors: 0
+# TX rejected (collision packet): 0.00% (req:1, rej:0)
+# TX rejected (collision beacon): 0.00% (req:1, rej:0)
+# TX rejected (too late): 0.00% (req:1, rej:0)
+# TX rejected (too early): 0.00% (req:1, rej:0)
+### SX1302 Status ###
+# SX1302 counter (INST): 60821940
+# SX1302 counter (PPS):  0
+# BEACON queued: 0
+# BEACON sent so far: 0
+# BEACON rejected: 0
+### [JIT] ###
+src/jitqueue.c:440:jit_print_queue(): INFO: [jit] queue is empty
+#--------
+src/jitqueue.c:440:jit_print_queue(): INFO: [jit] queue is empty
+### [GPS] ###
+# Invalid time reference (age: 1681082156 sec)
+# no valid GPS coordinates available yet
+### Concentrator temperature: 41 C ###
+##### END #####
+
+JSON up: {"stat":{"time":"2023-04-09 23:15:56 GMT","rxnb":0,"rxok":0,"rxfw":0,"ackr":0.0,"dwnb":0,"txnb":0,"temp":40.9}}
+INFO: [down] PULL_ACK received in 172 ms
+
+INFO: Received pkt from mote: 260C5F35 (fcnt=14)
+
+JSON up: {"rxpk":[{"jver":1,"tmst":61455259,"chan":0,"rfch":0,"freq":923.200000,"mid": 8,"stat":1,"modu":"LORA","datr":"SF9BW125","codr":"4/5","rssis":-84,"lsnr":11.8,"foff":5539,"rssi":-83,"size":21,"data":"QDVfDCYADgAIRWvNX66Fx7IXQxrI"}]}
+INFO: [down] PULL_ACK received in 161 ms
+INFO: [down] PULL_ACK received in 160 ms
+
+##### 2023-04-09 23:16:26 GMT #####
+### [UPSTREAM] ###
+# RF packets received by concentrator: 1
+# CRC_OK: 100.00%, CRC_FAIL: 0.00%, NO_CRC: 0.00%
+# RF packets forwarded: 1 (21 bytes)
+# PUSH_DATA datagrams sent: 2 (366 bytes)
+# PUSH_DATA acknowledged: 0.00%
+### [DOWNSTREAM] ###
+# PULL_DATA sent: 3 (100.00% acknowledged)
+# PULL_RESP(onse) datagrams received: 0 (0 bytes)
+# RF packets sent to concentrator: 0 (0 bytes)
+# TX errors: 0
+# TX rejected (collision packet): 0.00% (req:1, rej:0)
+# TX rejected (collision beacon): 0.00% (req:1, rej:0)
+# TX rejected (too late): 0.00% (req:1, rej:0)
+# TX rejected (too early): 0.00% (req:1, rej:0)
+### SX1302 Status ###
+# SX1302 counter (INST): 90824561
+# SX1302 counter (PPS):  0
+# BEACON queued: 0
+# BEACON sent so far: 0
+# BEACON rejected: 0
+### [JIT] ###
+src/jitqueue.c:440:jit_print_queue(): INFO: [jit] queue is empty
+#--------
+src/jitqueue.c:440:jit_print_queue(): INFO: [jit] queue is empty
+### [GPS] ###
+# Invalid time reference (age: 1681082186 sec)
+# no valid GPS coordinates available yet
+### Concentrator temperature: 40 C ###
+##### END #####
+
+JSON up: {"stat":{"time":"2023-04-09 23:16:26 GMT","rxnb":1,"rxok":CoreCell reset through GPIO23...
+SX1261 reset through GPIO23...
+CoreCell power enable through GPIO18...
+CoreCell ADC reset through GPIO13...
+1,"rxfw":1,"ackr":0.0,"dwnb":0,"txnb":0,"temp":40.4}}
+INFO: [down] PULL_ACK received in 160 ms
+INFO: [down] PULL_ACK received in 161 ms
+
+##### 2023-04-09 23:16:45 GMT #####
+### [UPSTREAM] ###
+# RF packets received by concentrator: 0
+# CRC_OK: 0.00%, CRC_FAIL: 0.00%, NO_CRC: 0.00%
+# RF packets forwarded: 0 (0 bytes)
+# PUSH_DATA datagrams sent: 1 (123 bytes)
+# PUSH_DATA acknowledged: 0.00%
+### [DOWNSTREAM] ###
+# PULL_DATA sent: 2 (100.00% acknowledged)
+# PULL_RESP(onse) datagrams received: 0 (0 bytes)
+# RF packets sent to concentrator: 0 (0 bytes)
+# TX errors: 0
+# TX rejected (collision packet): 0.00% (req:1, rej:0)
+# TX rejected (collision beacon): 0.00% (req:1, rej:0)
+# TX rejected (too late): 0.00% (req:1, rej:0)
+# TX rejected (too early): 0.00% (req:1, rej:0)
+### SX1302 Status ###
+# SX1302 counter (INST): 109498404
+# SX1302 counter (PPS):  0
+# BEACON queued: 0
+# BEACON sent so far: 0
+# BEACON rejected: 0
+### [JIT] ###
+src/jitqueue.c:440:jit_print_queue(): INFO: [jit] queue is empty
+#--------
+src/jitqueue.c:440:jit_print_queue(): INFO: [jit] queue is empty
+### [GPS] ###
+# Invalid time reference (age: 1681082205 sec)
+# no valid GPS coordinates available yet
+
+INFO: End of upstream thread
+### Concentrator temperature: 41 C ###
+##### END #####
+
+INFO: End of JIT thread
+
+INFO: End of downstream thread
+INFO: GPS closed successfully
+Closing SPI communication interface
+INFO: concentrator stopped successfully
+INFO: Exiting packet forwarder program

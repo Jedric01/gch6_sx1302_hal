@@ -1,5 +1,3 @@
-
-
 ### get external defined data
 
 include ../target.cfg
@@ -16,7 +14,7 @@ ARCH ?=
 CROSS_COMPILE ?=
 
 OBJDIR = obj
-INCLUDES = $(wildcard inc/*.h, src/*.h)
+INCLUDES = $(wildcard inc/*.h)
 
 ### External constant definitions
 # must get library build option to know if mpsse must be linked or not
@@ -88,9 +86,9 @@ $(OBJDIR)/%.o: src/%.c $(INCLUDES) | $(OBJDIR)
 ### Main program compilation and assembly
 
 $(OBJDIR)/$(APP_NAME).o: src/$(APP_NAME).c $(LGW_INC) $(INCLUDES) | $(OBJDIR)
-	$(CC) -c $(CFLAGS) $(VFLAG) -I$(LGW_PATH)/inc $< -o $@ -lpaho-mqtt3cs -L/home/fyp-gch6-2/Documents/paho.mqtt.c/build/output
+	$(CC) -c $(CFLAGS) $(VFLAG) -I$(LGW_PATH)/inc $< -o $@
 
 $(APP_NAME): $(OBJDIR)/$(APP_NAME).o $(LGW_PATH)/libloragw.a $(OBJDIR)/jitqueue.o
-	$(CC) -L$(LGW_PATH) -L$(LIB_PATH) $< $(OBJDIR)/jitqueue.o -o $@ $(LIBS) -lpaho-mqtt3cs -L/home/fyp-gch6-2/Documents/paho.mqtt.c/build/output
+	$(CC) -L$(LGW_PATH) -L$(LIB_PATH) $< $(OBJDIR)/jitqueue.o -o $@ $(LIBS)
 
 ### EOF

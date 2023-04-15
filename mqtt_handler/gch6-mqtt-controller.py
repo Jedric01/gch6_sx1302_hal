@@ -3,31 +3,43 @@
 import random
 from paho.mqtt import client as mqtt_client
 import os
-
 import subprocess
-from subprocess import check_output
 import time
 from re import findall
-
+from pathlib import Path
 import logging
 
 broker = 'broker.emqx.io'
 port = 1883
-topic = "mygch6/control"
+
+# todo: read from .env
+eui = "0x0016c001f160f149"
+topic = "/gateway/control/" + eui
 
 # generate client ID with pub prefix randomly
 client_id = f'python-mqtt-{random.randint(0, 100)}'
 username = 'cust1'
 password = 'gch6'
-logging.basicConfig(level=logging.INFO)
 QOS = 0
+
+path_repo = Path(__file__).resolve().parent.parent
+path_log = str(path_repo) + "/log/"
+
+logging.basicConfig(
+    level=logging.INFO,
+    filename=path_log + "gch6-mqtt-controller.log",
+    filemode='w'
+)
 
 pid = None
 logf = None
 
 ### MQTT HANDLER ###
+
+
 def on_log(client, userdata, level, buffer):
     logging.info(buffer)
+
 
 def connect_mqtt() -> mqtt_client:
     def on_connect(client, userdata, flags, rc):
@@ -47,17 +59,21 @@ def connect_mqtt() -> mqtt_client:
 
     return client
 
+
 def subscribe(client: mqtt_client):
     client.subscribe(topic)
     client.on_message = on_message
+
 
 def run():
     client = connect_mqtt()
     subscribe(client)
     client.loop_forever()
 
+
 def on_publish(client, userdata, mid):
     logging.info("In on_publish callback mid= " + str(mid))
+
 
 def on_message(client, userdata, msg):
     payload = msg.payload.decode()
@@ -66,9 +82,10 @@ def on_message(client, userdata, msg):
     response = parse_payload(payload)
     send_response(client, response)
 
+
 def parse_payload(payload):
     global pid, logf
-    command = payload.rstrip()
+    command = payload.rstrip().lstrip()
     response = ""
 
     # Get Status Handlers
@@ -82,7 +99,7 @@ def parse_payload(payload):
         os.system("shutdown -r now")
 
     # Packet forwarder handlers
-    elif command == "run_pkt_fwd":
+    elif command == "start":
         if pid:
             response = "Packet forwarded already started."
         else:
@@ -92,7 +109,7 @@ def parse_payload(payload):
             else:
                 response = "Failed to start packet forwarder."
 
-    elif command == "stop_pkt_fwd":
+    elif command == "stop":
         if stop_pkt_fwd(logf) == 0:
             response = "Packet forwarder stopped successfully."
         else:
@@ -109,6 +126,9 @@ def parse_payload(payload):
 
 
 def send_response(client, response):
+    # explicit delay needed to allow time for backend client publish disconnect(), receive connect()
+    time.sleep(0.2)
+
     if response != "":
         ret = client.publish(topic, response, qos=QOS)
         logging.info("PUBLISHED return =" + str(ret))
@@ -119,13 +139,16 @@ def send_response(client, response):
 ### COMMAND FUNCTIONS ###
 
 def check_temp():
-    temp = subprocess.check_output(["vcgencmd","measure_temp"]).decode("UTF-8")
-    return(findall("\d+\.\d+",temp)[0])
-    
+    temp = subprocess.check_output(
+        ["vcgencmd", "measure_temp"]).decode("UTF-8")
+    return (findall("\d+\.\d+", temp)[0])
+
+
 def check_uptime():
     with open('/proc/uptime', 'r') as f:
         uptime_seconds = float(f.readline().split()[0])
     return uptime_seconds
+
 
 def reboot_handler():
     os.system('sudo shutdown -r now')
@@ -133,15 +156,16 @@ def reboot_handler():
 
 ### PACKET FORWARDER CONTROLS ###
 
-def run_pkt_fwd(config='conf-cs.json', log='log.txt'):
+def run_pkt_fwd(config='conf-cs.json', log='pkt_fwd.log'):
     args = ['./lora_pkt_fwd', '-c', config]
-    usern = os.environ.get('USER')
-    path_pf = '/home/' + usern + '/Documents/sx1302_hal/packet_forwarder/'
 
     try:
-        logf = open(path_pf + log, 'w')
-        pid = subprocess.Popen(args, stdout=logf, stderr=logf, cwd=path_pf)
-        
+        path_log = str(path_repo) + "/log/"
+        path_packet_forwarder = str(path_repo) + "/packet_forwarder/"
+        logf = open(path_log + log, 'w')
+        pid = subprocess.Popen(
+            args, stdout=logf, stderr=logf, cwd=path_packet_forwarder)
+
         return [pid, logf]
 
     except OSError as e:
@@ -149,20 +173,25 @@ def run_pkt_fwd(config='conf-cs.json', log='log.txt'):
         logging.info("I/O error({0}): {1}".format(e.errno, e.strerror))
         return [-1, None]
 
+
 def stop_pkt_fwd(logf):
     global pid
     # pid.terminate()
+    if pid == None:
+        return -1
+    
     pid = None
-
     rc = os.WEXITSTATUS(os.system('kill `pgrep lora_pkt_fwd`'))
     if rc == 0:
-        time.sleep(2)   # grace time to save graceful exit log
+        # grace time to save exit log buffer
+        time.sleep(2)
         if logf:
             logf.close()
-        
+
     return rc
 
 #########################
+
 
 if __name__ == '__main__':
     run()

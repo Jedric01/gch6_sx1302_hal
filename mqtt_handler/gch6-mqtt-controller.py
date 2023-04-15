@@ -11,7 +11,10 @@ import logging
 
 broker = 'broker.emqx.io'
 port = 1883
-topic = "mygch6/control"
+
+# todo: read from .env
+eui = "0x0016c001f160f149"
+topic = "/gateway/control/" + eui
 
 # generate client ID with pub prefix randomly
 client_id = f'python-mqtt-{random.randint(0, 100)}'
@@ -96,7 +99,7 @@ def parse_payload(payload):
         os.system("shutdown -r now")
 
     # Packet forwarder handlers
-    elif command == "run_pkt_fwd":
+    elif command == "start":
         if pid:
             response = "Packet forwarded already started."
         else:
@@ -106,7 +109,7 @@ def parse_payload(payload):
             else:
                 response = "Failed to start packet forwarder."
 
-    elif command == "stop_pkt_fwd":
+    elif command == "stop":
         if stop_pkt_fwd(logf) == 0:
             response = "Packet forwarder stopped successfully."
         else:
@@ -123,6 +126,9 @@ def parse_payload(payload):
 
 
 def send_response(client, response):
+    # explicit delay needed to allow time for backend client publish disconnect(), receive connect()
+    time.sleep(0.2)
+
     if response != "":
         ret = client.publish(topic, response, qos=QOS)
         logging.info("PUBLISHED return =" + str(ret))
@@ -171,11 +177,14 @@ def run_pkt_fwd(config='conf-cs.json', log='pkt_fwd.log'):
 def stop_pkt_fwd(logf):
     global pid
     # pid.terminate()
+    if pid == None:
+        return -1
+    
     pid = None
-
     rc = os.WEXITSTATUS(os.system('kill `pgrep lora_pkt_fwd`'))
     if rc == 0:
-        time.sleep(2)   # grace time to save graceful exit log
+        # grace time to save exit log buffer
+        time.sleep(2)
         if logf:
             logf.close()
 

@@ -9,6 +9,8 @@ from re import findall
 from pathlib import Path
 import logging
 
+from wget_config import download_config
+
 broker = 'broker.emqx.io'
 port = 1883
 
@@ -85,7 +87,8 @@ def on_message(client, userdata, msg):
 
 def parse_payload(payload):
     global pid, logf
-    command = payload.rstrip().lstrip()
+    payload = payload.rstrip().lstrip().split(';')
+    command = payload[0]
     response = ""
 
     # Get Status Handlers
@@ -100,10 +103,18 @@ def parse_payload(payload):
 
     # Packet forwarder handlers
     elif command == "start":
+        path_conf = 'conf-cs.json'
+        if len(payload) < 3:
+            logging.info("Running packet forwarder with default conf-cs.json")
+        elif len(payload) == 3:
+            logging.info("Fetching config file with wget.")
+            path_conf = path_repo + "/packet_forwarder/conf-wget.json"
+            download_config(path_conf, payload[1].lstrip().rstrip(), payload[2].lstrip().rstrip())
+        
         if pid:
             response = "Packet forwarded already started."
         else:
-            pid, logf = run_pkt_fwd(config='conf.json')
+            pid, logf = run_pkt_fwd(config=path_conf)
             if pid:
                 response = "Packet forwarder started successfully."
             else:
